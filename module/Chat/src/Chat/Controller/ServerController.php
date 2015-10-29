@@ -5,6 +5,7 @@ namespace Chat\Controller;
 use Ratchet\Server\IoServer;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
+use Core\System\Base;
 use Zend\Mvc\Controller\AbstractActionController;
 
 /**
@@ -30,6 +31,12 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 * @var unknown
 	 */
 	private static $_unknown_command = "Unknown Command";
+	
+	/**
+	 *
+	 * @var unknown
+	 */
+	CONST CMD_LENGTH = 3;
 	
 	/**
 	 *
@@ -62,7 +69,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 */
 	public function onOpen(ConnectionInterface $conn) {
 		$this->queuedClients [] = $conn;
-		$this->filterRequest ( $conn, "?" );
+		$this->filterRequest ( $conn, "HLP" );
 		$this->processMsgQueue ();
 	}
 	
@@ -76,6 +83,17 @@ class ServerController extends AbstractActionController implements MessageCompon
 	
 	/**
 	 *
+	 * @return unknown
+	 */
+	public function getCmd() {
+		for($i = 0; $i < self::CMD_LENGTH; $i ++) {
+			$cmd .= $this->payload [$i];
+		}
+		return $cmd;
+	}
+	
+	/**
+	 *
 	 * @param unknown $msg        	
 	 */
 	public function filterRequest($conn, $msg) {
@@ -84,50 +102,52 @@ class ServerController extends AbstractActionController implements MessageCompon
 		$this->msgToSource = "";
 		$this->msgToDestination = "";
 		$this->msgToBroadcast = "";
-		
+		$this->cmd = "";
 		$this->payload = str_replace ( "\r\n", '', $msg );
 		$explode = explode ( ":", $this->payload );
 		
 		if (array_key_exists ( trim ( $explode [0] ), $this->activeClients ) && trim ( $explode [1] ) != "") {
 			if (trim ( $explode [0] ) != $this->getConnName ( $this->sourceConn )) {
-				$this->cmd = "msg";
+				$this->method = "msg";
+				$this->cmd = "MGR";
+				
 			}
 		} else {
-			$check = $this->payload [0];
-			switch ($check) {
-				case '=' :
-					$this->cmd = "login";
+			$this->cmd = $this->getCmd ();
+			switch ($this->cmd) {
+				case 'LGN' :
+					$this->method = "login";
 					break;
-				case '#' :
-					$this->cmd = "request";
+				case 'RST' :
+					$this->method = "request";
 					break;
-				case '?' :
-					$this->cmd = "help";
+				case 'HLP' :
+					$this->method = "help";
 					break;
-				case '+' :
-					$this->cmd = "approve";
+				case 'APR' :
+					$this->method = "approve";
 					break;
-				case '*' :
-					$this->cmd = "list";
+				case 'LST' :
+					$this->method = "list";
 					break;
-				case '~' :
-					$this->cmd = "status";
+				case 'STS' :
+					$this->method = "status";
 					break;
-				case '<' :
-					$this->cmd = "typing";
+				case 'TYP' :
+					$this->method = "typing";
 					break;
-				case '^' :
-					$this->cmd = "upload";
+				case 'UPL' :
+					$this->method = "upload";
 					break;
-				case 'x' :
-					$this->cmd = "logout";
+				case 'LGT' :
+					$this->method = "logout";
 					break;
 			}
 		}
 		
-		$this->cmd = "run" . ucwords ( $this->cmd ) . "Command";
-		if (method_exists ( $this, $this->cmd )) {
-			$this->{$this->cmd} ();
+		$this->cmdMethod = "run" . ucwords ( $this->method ) . "Command";
+		if (method_exists ( $this, $this->cmdMethod )) {
+			$this->{$this->cmdMethod} ();
 		} else {
 			if ($this->payload != "") {
 				$this->msgToSource = array (
@@ -157,10 +177,10 @@ class ServerController extends AbstractActionController implements MessageCompon
 			'username' => $username,
 			'password' => $password 
 		) );
-		$statement = $adapter->createStatement ( "select * from user where id ='" . $id . "'" );
+		$statement = $adapter->createStatement ( "select * from moxy_user where id ='" . $id . "'" );
 		$result = $statement->execute ();
 		$data = $result->current ();
-		echo "\nselect * from user where id ='" . $id . "'\n";
+		echo "\nselect * from moxy_user where id ='" . $id . "'\n";
 		echo json_encode ( $data );
 		echo "\n";
 		return $data;
@@ -172,23 +192,23 @@ class ServerController extends AbstractActionController implements MessageCompon
 		echo json_encode ( $this->activeClients );
 		echo json_encode ( $this->activeClientsNameMap );
 		
-		$param = trim ( substr ( $this->payload, 1 ) );
+		$param = trim ( substr ( $this->payload, self::CMD_LENGTH ) );
 		$UserData = $this->getUser ( $param );
 		
 		if ($UserData ['id'] > 1) {
 			if (! $this->login ( $UserData )) {
 				$this->msgToSource = array (
-					"cmd" => "=",
+					"cmd" => $this->cmd,
 					"debug" => json_encode ( $UserData ),
 					"success" => false 
 				);
 			} else {
 				$this->msgToBroadcast = array (
-					"cmd" => "=",
+					"cmd" => $this->cmd,
 					"msg" => "$param" 
 				);
 				$this->msgToSource = array (
-					"cmd" => "=",
+					"cmd" => $this->cmd,
 					"success" => true 
 				);
 			}
@@ -204,19 +224,19 @@ class ServerController extends AbstractActionController implements MessageCompon
 	/**
 	 */
 	public function runStatusCommand() {
-		$param = trim ( substr ( $this->payload, 1 ) );
+		$param = trim ( substr ( $this->payload, self::CMD_LENGTH ) );
 		
 		if ($param != "") {
 			if (! $this->isReceiverLoggedin ( $param )) {
 				$this->msgToSource = array (
 					"success" => true,
-					"cmd" => "~" 
+					"cmd" => $this->cmd 
 				);
 			} else {
 				$this->msgToSource = array (
 					"success" => false,
 					"debug" => $param,
-					"cmd" => "~" 
+					"cmd" => $this->cmd 
 				);
 			}
 		} else {
@@ -243,23 +263,23 @@ class ServerController extends AbstractActionController implements MessageCompon
 	/**
 	 */
 	public function runRequestCommand() {
-		$param = trim ( substr ( $this->payload, 1 ) );
+		$param = trim ( substr ( $this->payload, self::CMD_LENGTH ) );
 		
 		if ($param != "") {
 			if (! $this->isReceiverLoggedin ( $param )) {
 				$this->msgToSource = array (
-					"cmd" => "@",
+					"cmd" => $this->cmd,
 					"debug" => $param,
 					"success" => false 
 				);
 			} else {
 				$this->requestPending [$this->getConnId ( $this->sourceConn )] [$param] = true;
 				$this->msgToSource = array (
-					"cmd" => "@",
+					"cmd" => $this->cmd,
 					"success" => true 
 				);
 				$this->msgToDestination = array (
-					"cmd" => "@",
+					"cmd" => $this->cmd,
 					"id" => $this->getConnId ( $this->sourceConn ),
 					"name" => $this->getConnName ( $this->sourceConn ) 
 				);
@@ -277,25 +297,25 @@ class ServerController extends AbstractActionController implements MessageCompon
 	/**
 	 */
 	public function runApproveCommand() {
-		$param = trim ( substr ( $this->payload, 1 ) );
+		$param = trim ( substr ( $this->payload, self::CMD_LENGTH ) );
 		
 		if ($param != "") {
 			if (! $this->isReceiverLoggedin ( $param )) {
 				$this->msgToSource = array (
-					"cmd" => "+",
+					"cmd" => $this->cmd,
 					"success" => false 
 				);
 			} else {
 				$this->requestApproved [$param] [$this->getConnId ( $this->sourceConn )] = true;
 				$this->msgToDestination = array (
-					"cmd" => "+",
+					"cmd" => $this->cmd,
 					"success" => true,
 					"id" => $this->getConnId ( $this->sourceConn ),
 					"name" => $this->getConnName ( $this->sourceConn ) 
 				);
 				$this->destinationConn = $this->activeClients [$param];
 				$this->msgToSource = array (
-					"cmd" => "+",
+					"cmd" => $this->cmd,
 					"success" => true,
 					"id" => $param,
 					"name" => $this->getConnName ( $this->destinationConn ) 
@@ -330,7 +350,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 				$this->destinationConn = $this->activeClients [$to];
 				if ($this->isChatApproved ( $to )) {
 					$this->msgToDestination = array (
-						"cmd" => "$",
+						"cmd" => $this->cmd,
 						"id" => $this->getConnId ( $this->sourceConn ),
 						"name" => $this->getConnName ( $this->sourceConn ),
 						"msg" => $this->prepareMsg ( $msg ) 
@@ -513,7 +533,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 		unset ( $this->activeClients [$id] );
 		unset ( $this->activeClientsNameMap [$id] );
 		$this->msgToSource = array (
-			"cmd" => "x",
+			"cmd" => $this->cmd,
 			"success" => true 
 		);
 	}
