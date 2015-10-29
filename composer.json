@@ -10,11 +10,7 @@
 	"keywords" : [
 		"chat"
 	],
-	"config" : {
-		"github-oauth" : {
-			"github.com" : "bcfc8251f25d68ecca5f127b6a64114b666ebc5d"
-		}
-	},
+	
 	"license" : "BSD-3-Clause",
 	"homepage" : "http://framework.zend.com/"
 }
