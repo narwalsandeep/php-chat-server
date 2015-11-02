@@ -38,7 +38,14 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 */
 	CONST CMD_LENGTH = 3;
 	
-	/**https://github.com/narwalsandeep/php-chat-server.git
+	/**
+	 *
+	 * @var unknown
+	 */
+	CONST PORT = 2852;
+	
+	/**
+	 * https://github.com/narwalsandeep/php-chat-server.git
 	 *
 	 * @var unknown
 	 */
@@ -57,9 +64,10 @@ class ServerController extends AbstractActionController implements MessageCompon
 	/**
 	 */
 	public function startAction() {
-		$server = IoServer::factory ( new ServerController (), 9999 );
+		echo "server starting ...\n";
+		$server = IoServer::factory ( new ServerController (), self::PORT );
 		$server->run ();
-		// die ( "server started ..." );
+		echo "server started ! \n";
 	}
 	
 	/**
@@ -68,19 +76,12 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 * @see \Ratchet\ComponentInterface::onOpen()
 	 */
 	public function onOpen(ConnectionInterface $conn) {
+		echo json_encode ( $conn );
+		echo "\n";
 		$this->queuedClients [] = $conn;
 		$this->sourceConn = $conn;
 		$this->filterRequest ( "HLP" );
 		$this->processMsgQueue ();
-	}
-	
-	/**
-	 */
-	public function runHelpCommand() {
-		$this->msgToSource = array (
-			"success" => "true",
-			"msg" => json_encode ( $this->sourceConn ) 
-		);
 	}
 	
 	/**
@@ -168,23 +169,23 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 */
 	public function getUser($id = 0) {
 		/*
-		$config = new \Zend\Config\Config ( include DOC_ROOT . '/config/autoload/local.php' );
-		$username = $config->get ( "db" )->get ( "username" );
-		$password = $config->get ( "db" )->get ( "password" );
-		$dsn = explode ( ";", explode ( ":", $config->get ( "db" )->get ( "dsn" ) )[1] );
-		$dbname = explode ( "=", $dsn [0] )[1];
-		$host = explode ( "=", $dsn [1] )[1];
-		$adapter = new \Zend\Db\Adapter\Adapter ( array (
-			'driver' => 'mysqli',
-			'host' => ($host == "") ? "localhost" : $host,
-			'database' => $dbname,
-			'username' => $username,
-			'password' => $password 
-		) );
-		$statement = $adapter->createStatement ( "select * from user where id ='" . $id . "'" );
-		$result = $statement->execute ();
-		$data = $result->current ();
-		*/
+		 * $config = new \Zend\Config\Config ( include DOC_ROOT . '/config/autoload/local.php' );
+		 * $username = $config->get ( "db" )->get ( "username" );
+		 * $password = $config->get ( "db" )->get ( "password" );
+		 * $dsn = explode ( ";", explode ( ":", $config->get ( "db" )->get ( "dsn" ) )[1] );
+		 * $dbname = explode ( "=", $dsn [0] )[1];
+		 * $host = explode ( "=", $dsn [1] )[1];
+		 * $adapter = new \Zend\Db\Adapter\Adapter ( array (
+		 * 'driver' => 'mysqli',
+		 * 'host' => ($host == "") ? "localhost" : $host,
+		 * 'database' => $dbname,
+		 * 'username' => $username,
+		 * 'password' => $password
+		 * ) );
+		 * $statement = $adapter->createStatement ( "select * from user where id ='" . $id . "'" );
+		 * $result = $statement->execute ();
+		 * $data = $result->current ();
+		 */
 		if (true) {
 			if (! $data ['id']) {
 				$data ['id'] = microtime ();
@@ -245,7 +246,14 @@ class ServerController extends AbstractActionController implements MessageCompon
 			);
 		}
 	}
-	
+	/**
+	 */
+	public function runHelpCommand() {
+		$this->msgToSource = array (
+			"success" => "true",
+			"msg" => json_encode ( $this->sourceConn ) 
+		);
+	}
 	/**
 	 */
 	public function runStatusCommand() {
