@@ -110,7 +110,6 @@ class ServerController extends AbstractActionController implements MessageCompon
 			if (trim ( $explode [0] ) != $this->getConnName ( $this->sourceConn )) {
 				$this->method = "msg";
 				$this->cmd = "MGR";
-				
 			}
 		} else {
 			$this->cmd = $this->getCmd ();
@@ -141,6 +140,9 @@ class ServerController extends AbstractActionController implements MessageCompon
 					break;
 				case 'LGT' :
 					$this->method = "logout";
+					break;
+				case 'PRF' :
+					$this->method = "profile";
 					break;
 			}
 		}
@@ -184,6 +186,26 @@ class ServerController extends AbstractActionController implements MessageCompon
 		echo json_encode ( $data );
 		echo "\n";
 		return $data;
+	}
+	
+	/**
+	 */
+	public function runProfileCommand() {
+		$param = trim ( substr ( $this->payload, self::CMD_LENGTH ) );
+		
+		if ($param != "") {
+			$this->msgToSource = array (
+				"success" => true,
+				"msg" => json_encode ( $this->getConnProfile ( $this->sourceConn ) ),
+				"cmd" => $this->cmd 
+			);
+		} else {
+			$this->msgToSource = array (
+				"success" => false,
+				"debug" => $param,
+				"msg" => self::$_unknown_command 
+			);
+		}
 	}
 	
 	/**
@@ -504,6 +526,11 @@ class ServerController extends AbstractActionController implements MessageCompon
 		}
 		
 		return false;
+	}
+	
+	public function getConnProfile($conn){
+		
+		return $this->acticeClients
 	}
 	
 	/**
