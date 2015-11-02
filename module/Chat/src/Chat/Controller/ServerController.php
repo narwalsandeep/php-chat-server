@@ -98,6 +98,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 * @param unknown $msg        	
 	 */
 	public function filterRequest($conn, $msg) {
+		echo "$conn->resourceId from $conn->remoteAddress called $msg\n";
 		$this->sourceConn = $conn;
 		$this->destinationConn = "";
 		$this->msgToSource = "";
@@ -190,9 +191,6 @@ class ServerController extends AbstractActionController implements MessageCompon
 	/**
 	 */
 	public function runLoginCommand() {
-		echo json_encode ( $this->activeClients );
-		echo json_encode ( $this->activeClientsNameMap );
-		
 		$param = trim ( substr ( $this->payload, self::CMD_LENGTH ) );
 		$UserData = $this->getUser ( $param );
 		
