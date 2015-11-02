@@ -188,7 +188,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 		 */
 		if (true) {
 			if (! $data ['id']) {
-				$data ['id'] = microtime ();
+				$data ['id'] = time();
 				$data ['first_name'] = $id;
 			}
 		}
