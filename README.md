@@ -9,13 +9,13 @@ version 1.0
 ## Server
 - once zf2 is setup use below command to start server
 - php public/index.php chat start
-- server will start on 9999, you can modify port in codes
+- server will start on 2852, you can modify port in codes
 
 ## Client
 On terminal use telnet OR nc command e.g.
-- nc chat-server-ip-address 9999 
+- nc chat-server-ip-address 2852 
 - OR
-- telnet chat-server-ip-address 9999
+- telnet chat-server-ip-address 2852
 
 ## Command structure
 - All commands start with 3 Char e.g.
@@ -31,7 +31,7 @@ On terminal use telnet OR nc command e.g.
 
 ## Demo
 - type below command in your terminal
-- nc 52.11.100.44 9999
+- nc switchcodes.com 2852
 - then type below command to login as user 4
 - LGN4
 

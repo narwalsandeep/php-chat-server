@@ -67,7 +67,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 		echo "server starting ...\n";
 		$server = IoServer::factory ( new ServerController (), self::PORT );
 		$server->run ();
-		echo "server started ! \n";
+		
 	}
 	
 	/**
