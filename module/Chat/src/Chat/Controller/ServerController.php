@@ -69,7 +69,8 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 */
 	public function onOpen(ConnectionInterface $conn) {
 		$this->queuedClients [] = $conn;
-		$this->filterRequest ( $conn, "HLP" );
+		$this->sourceConn = $conn;
+		$this->filterRequest ( "HLP" );
 		$this->processMsgQueue ();
 	}
 	
@@ -77,7 +78,8 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 */
 	public function runHelpCommand() {
 		$this->msgToSource = array (
-			"success" => "true" 
+			"success" => "true",
+			"msg" => json_encode ( $this->sourceConn ) 
 		);
 	}
 	
@@ -96,8 +98,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 *
 	 * @param unknown $msg        	
 	 */
-	public function filterRequest($conn, $msg) {
-		$this->sourceConn = $conn;
+	public function filterRequest($msg) {
 		$this->destinationConn = "";
 		$this->msgToSource = "";
 		$this->msgToDestination = "";
@@ -179,12 +180,16 @@ class ServerController extends AbstractActionController implements MessageCompon
 			'username' => $username,
 			'password' => $password 
 		) );
-		$statement = $adapter->createStatement ( "select * from moxy_user where id ='" . $id . "'" );
+		$statement = $adapter->createStatement ( "select * from user where id ='" . $id . "'" );
 		$result = $statement->execute ();
 		$data = $result->current ();
-		echo "\nselect * from moxy_user where id ='" . $id . "'\n";
-		echo json_encode ( $data );
-		echo "\n";
+		
+		if (true) {
+			if (! $data ['id']) {
+				$data ['id'] = microtime ();
+				$data ['first_name'] = $id;
+			}
+		}
 		return $data;
 	}
 	
@@ -196,7 +201,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 		if ($param != "") {
 			$this->msgToSource = array (
 				"success" => true,
-				"msg" => json_encode ( $this->getConnProfile ( $this->sourceConn ) ),
+				"msg" => $this->getConnProfile ( $this->sourceConn ),
 				"cmd" => $this->cmd 
 			);
 		} else {
@@ -211,9 +216,6 @@ class ServerController extends AbstractActionController implements MessageCompon
 	/**
 	 */
 	public function runLoginCommand() {
-		echo json_encode ( $this->activeClients );
-		echo json_encode ( $this->activeClientsNameMap );
-		
 		$param = trim ( substr ( $this->payload, self::CMD_LENGTH ) );
 		$UserData = $this->getUser ( $param );
 		
@@ -528,9 +530,13 @@ class ServerController extends AbstractActionController implements MessageCompon
 		return false;
 	}
 	
-	public function getConnProfile($conn){
-		
-		return $this->acticeClients
+	/**
+	 *
+	 * @param unknown $conn        	
+	 * @return string
+	 */
+	public function getConnProfile($conn) {
+		return json_encode ( $conn );
 	}
 	
 	/**
