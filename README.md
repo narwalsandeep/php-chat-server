@@ -5,6 +5,7 @@ version 1.0
 - Need to know how to setup ZF2 using composer
 - Create a simple Database with 'user' table, and id,username columns
 - create config/autoload/local.php and define db settings, check zf2 docs
+- make sure the port 2852 is open for inboun traffic , or what port you specify should be open.
  
 ## Server
 - once zf2 is setup use below command to start server
