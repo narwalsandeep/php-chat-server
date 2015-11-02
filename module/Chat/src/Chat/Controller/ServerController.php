@@ -167,6 +167,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 * @return unknown
 	 */
 	public function getUser($id = 0) {
+		/*
 		$config = new \Zend\Config\Config ( include DOC_ROOT . '/config/autoload/local.php' );
 		$username = $config->get ( "db" )->get ( "username" );
 		$password = $config->get ( "db" )->get ( "password" );
@@ -183,7 +184,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 		$statement = $adapter->createStatement ( "select * from user where id ='" . $id . "'" );
 		$result = $statement->execute ();
 		$data = $result->current ();
-		
+		*/
 		if (true) {
 			if (! $data ['id']) {
 				$data ['id'] = microtime ();
