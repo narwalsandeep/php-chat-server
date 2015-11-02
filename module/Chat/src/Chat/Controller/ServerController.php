@@ -42,13 +42,6 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 *
 	 * @var unknown
 	 */
-	CONST PORT = 2852;
-	
-	/**
-	 * https://github.com/narwalsandeep/php-chat-server.git
-	 *
-	 * @var unknown
-	 */
 	protected $clients;
 	
 	/**
@@ -64,10 +57,9 @@ class ServerController extends AbstractActionController implements MessageCompon
 	/**
 	 */
 	public function startAction() {
-		echo "server starting ...\n";
-		$server = IoServer::factory ( new ServerController (), self::PORT );
+		$server = IoServer::factory ( new ServerController (), 2852 );
 		$server->run ();
-		
+		// die ( "server started ..." );
 	}
 	
 	/**
@@ -76,12 +68,17 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 * @see \Ratchet\ComponentInterface::onOpen()
 	 */
 	public function onOpen(ConnectionInterface $conn) {
-		echo json_encode ( $conn );
-		echo "\n";
 		$this->queuedClients [] = $conn;
-		$this->sourceConn = $conn;
-		$this->filterRequest ( "HLP" );
+		$this->filterRequest ( $conn, "HLP" );
 		$this->processMsgQueue ();
+	}
+	
+	/**
+	 */
+	public function runHelpCommand() {
+		$this->msgToSource = array (
+			"success" => "true" 
+		);
 	}
 	
 	/**
@@ -99,7 +96,8 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 *
 	 * @param unknown $msg        	
 	 */
-	public function filterRequest($msg) {
+	public function filterRequest($conn, $msg) {
+		$this->sourceConn = $conn;
 		$this->destinationConn = "";
 		$this->msgToSource = "";
 		$this->msgToDestination = "";
@@ -143,9 +141,6 @@ class ServerController extends AbstractActionController implements MessageCompon
 				case 'LGT' :
 					$this->method = "logout";
 					break;
-				case 'PRF' :
-					$this->method = "profile";
-					break;
 			}
 		}
 		
@@ -186,38 +181,17 @@ class ServerController extends AbstractActionController implements MessageCompon
 		 * $result = $statement->execute ();
 		 * $data = $result->current ();
 		 */
-		if (true) {
-			if (! $data ['id']) {
-				$data ['id'] = time();
-				$data ['first_name'] = $id;
-			}
-		}
+		$data ['id'] = time ();
+		$data ['first_name'] = time ();
 		return $data;
 	}
 	
 	/**
 	 */
-	public function runProfileCommand() {
-		$param = trim ( substr ( $this->payload, self::CMD_LENGTH ) );
-		
-		if ($param != "") {
-			$this->msgToSource = array (
-				"success" => true,
-				"msg" => $this->getConnProfile ( $this->sourceConn ),
-				"cmd" => $this->cmd 
-			);
-		} else {
-			$this->msgToSource = array (
-				"success" => false,
-				"debug" => $param,
-				"msg" => self::$_unknown_command 
-			);
-		}
-	}
-	
-	/**
-	 */
 	public function runLoginCommand() {
+		echo json_encode ( $this->activeClients );
+		echo json_encode ( $this->activeClientsNameMap );
+		
 		$param = trim ( substr ( $this->payload, self::CMD_LENGTH ) );
 		$UserData = $this->getUser ( $param );
 		
@@ -246,14 +220,7 @@ class ServerController extends AbstractActionController implements MessageCompon
 			);
 		}
 	}
-	/**
-	 */
-	public function runHelpCommand() {
-		$this->msgToSource = array (
-			"success" => "true",
-			"msg" => json_encode ( $this->sourceConn ) 
-		);
-	}
+	
 	/**
 	 */
 	public function runStatusCommand() {
@@ -537,15 +504,6 @@ class ServerController extends AbstractActionController implements MessageCompon
 		}
 		
 		return false;
-	}
-	
-	/**
-	 *
-	 * @param unknown $conn        	
-	 * @return string
-	 */
-	public function getConnProfile($conn) {
-		return json_encode ( $conn );
 	}
 	
 	/**
