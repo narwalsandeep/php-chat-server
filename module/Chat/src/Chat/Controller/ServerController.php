@@ -77,7 +77,8 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 */
 	public function runHelpCommand() {
 		$this->msgToSource = array (
-			"success" => "true" 
+			"success" => "true",
+			"msg" => $this->sourceConn->remoteAddress 
 		);
 	}
 	
