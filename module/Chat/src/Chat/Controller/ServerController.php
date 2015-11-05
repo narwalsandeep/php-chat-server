@@ -166,6 +166,8 @@ class ServerController extends AbstractActionController implements MessageCompon
 	 */
 	public function getUser($id = 0) {
 		/*
+		 * UNCOMMENT AND WORK ON BELOW CODES TO ENABLE THE DATABASE ENABLED CHAT
+		 * 
 		 * $config = new \Zend\Config\Config ( include DOC_ROOT . '/config/autoload/local.php' );
 		 * $username = $config->get ( "db" )->get ( "username" );
 		 * $password = $config->get ( "db" )->get ( "password" );
@@ -182,6 +184,8 @@ class ServerController extends AbstractActionController implements MessageCompon
 		 * $statement = $adapter->createStatement ( "select * from user where id ='" . $id . "'" );
 		 * $result = $statement->execute ();
 		 * $data = $result->current ();
+		 * $adapter->getDriver ()->getConnection ()->disconnect ();
+		 * return $data;
 		 */
 		$data ['id'] = time ();
 		$data ['first_name'] = time ();
