@@ -23,6 +23,9 @@ On terminal use telnet OR nc command e.g.
 - LGN = login e.g. LGN2 , LGN3  where 2,3 are user.id in your database
 - RST = Send Chat Request  e.g. RST3
 - APR = Approve Chat Request e.g. APR3
+- STS = to get another user online status 
+- TYP = to get status is other user typing (TODO)
+- UPL = to upload a file (TODO)
 - LST = List all online users e.g. LST
 - LGT = Logout  e.g. LGT
 - Most of commands return json which can be proceed as needed
@@ -33,8 +36,9 @@ On terminal use telnet OR nc command e.g.
 ## Demo
 - type below command in your terminal
 - nc switchcodes.com 2852
-- then type below command to login as user 4
-- LGN4
+- then type below command to login as user id = 1
+- LGN1
+- to logout just type LGT
 
 
 
