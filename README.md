@@ -36,8 +36,9 @@ On terminal use telnet OR nc command e.g.
 ## Demo
 - type below command in your terminal
 - nc switchcodes.com 2852
-- then type below command to login as user id = 1
-- LGN1
+- then type below command to login as user id = 25
+- LGN25
+- you can use any number after LGN, server will register you with that number and assign a socket to you
 - to logout just type LGT
 
 
